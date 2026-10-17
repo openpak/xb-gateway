@@ -606,3 +606,30 @@ func TestConfigValidation(t *testing.T) {
 		t.Fatal("capture on RAM disk")
 	}
 }
+
+// A restarted gateway must hand out generations above every one the previous
+// process issued, or services holding a lease from the old process refuse the
+// console as stale.
+func TestGenerationsStayMonotonicAcrossRestart(t *testing.T) {
+	t0 := time.Date(2026, 10, 17, 22, 0, 0, 0, time.UTC)
+	// A previous run that opened a million connections is still below the seed
+	// of a process started one second later.
+	if old := genSeed(t0) + 1<<20 - 1; genSeed(t0.Add(time.Second)) <= old {
+		t.Fatal("a later start must seed above everything an earlier run could issue")
+	}
+	if genSeed(t0) >= 1<<53 {
+		t.Fatal("generations must stay exactly representable as JSON numbers")
+	}
+	cfg := DefaultConfig()
+	cfg.AdvertiseIP = advertise
+	srv, err := NewServer(cfg, slog.New(slog.NewTextHandler(io.Discard, nil)), nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := srv.gen.Load(); got < genSeed(time.Now().Add(-time.Minute)) || got > genSeed(time.Now().Add(time.Minute)) {
+		t.Fatalf("a new process must start its generations at its start time, got %d", got)
+	}
+	if srv.gen.Add(1) <= 1<<20 {
+		t.Fatal("generation 1 after a restart is the bug this guards against")
+	}
+}

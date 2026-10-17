@@ -69,11 +69,22 @@ func NewServer(cfg Config, log *slog.Logger, v TicketVerifier, d Directory, back
 	if backends == nil {
 		backends = map[uint32]Backend{}
 	}
-	return &Server{cfg: cfg, log: log, verifier: v, dir: d, backends: backends, now: time.Now, capture: cp,
+	srv := &Server{cfg: cfg, log: log, verifier: v, dir: d, backends: backends, now: time.Now, capture: cp,
 		initSem: make(chan struct{}, cfg.InitWorkers), limiter: newIPLimiter(cfg.InitRate, cfg.InitBurst, 65536),
 		replay:   newReplayCache(2*cfg.ClockSkew, 1<<17),
-		sessions: map[sgwire.SPI]*Session{}, perIP: map[netip.Addr]int{}}, nil
+		sessions: map[sgwire.SPI]*Session{}, perIP: map[netip.Addr]int{}}
+	srv.gen.Store(genSeed(srv.now()))
+	return srv, nil
 }
+
+// genSeed is the first connection generation of a process started at t.
+// Generations order a console's connections for the feature services (the
+// newest owns the account, older ones are refused as stale). They must keep
+// increasing across gateway restarts, or services still holding a lease from the
+// previous process would refuse every new connection as stale until the lease
+// expires. The start time in seconds sits in the high bits (51 bits in total, so
+// it survives a JSON number), leaving 2^20 connections per process run.
+func genSeed(t time.Time) uint64 { return uint64(t.Unix()) << 20 }
 
 // Listen binds the UDP socket on the local interface (not the advertised address).
 func (s *Server) Listen() error {
