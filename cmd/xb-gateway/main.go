@@ -17,9 +17,9 @@ import (
 	"syscall"
 	"time"
 
-	"openpak/xb-live/internal/krb"
-	"openpak/xb-live/internal/xbaccountapi"
-	"openpak/xb-live/services/xb-gateway/internal/gateway"
+	"github.com/openpak/xb-common/krb"
+	"github.com/openpak/xb-common/xbaccountapi"
+	"github.com/openpak/xb-gateway/internal/gateway"
 )
 
 func main() {

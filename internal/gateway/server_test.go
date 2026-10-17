@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	"openpak/xb-live/internal/sgwire"
+	"github.com/openpak/xb-gateway/sgwire"
 )
 
 var advertise = netip.MustParseAddr("203.0.113.5")

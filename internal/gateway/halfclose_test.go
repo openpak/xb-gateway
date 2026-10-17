@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"openpak/xb-live/internal/sgwire"
+	"github.com/openpak/xb-gateway/sgwire"
 )
 
 // delayedBackend answers a request only after the console half-closed and a

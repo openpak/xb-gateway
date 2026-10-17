@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"openpak/xb-live/internal/xbaccountapi"
+	"github.com/openpak/xb-common/xbaccountapi"
 )
 
 type kindResolver struct{ user, device int }

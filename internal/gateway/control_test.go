@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"openpak/xb-live/internal/sgwire"
+	"github.com/openpak/xb-gateway/sgwire"
 )
 
 func TestDeliverPushSends0x5309(t *testing.T) {

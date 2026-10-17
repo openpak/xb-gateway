@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"openpak/xb-live/internal/xbfeature"
+	"github.com/openpak/xb-common/xbfeature"
 )
 
 // MTLSFiles locate the gateway's client identity and the CA that signs feature

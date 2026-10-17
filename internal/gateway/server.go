@@ -15,7 +15,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"openpak/xb-live/internal/sgwire"
+	"github.com/openpak/xb-gateway/sgwire"
 )
 
 type stats struct {

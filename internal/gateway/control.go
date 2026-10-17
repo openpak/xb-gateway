@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"openpak/xb-live/internal/sgwire"
-	"openpak/xb-live/internal/xbfeature"
+	"github.com/openpak/xb-common/xbfeature"
+	"github.com/openpak/xb-gateway/sgwire"
 )
 
 // presenceServiceID is the service whose sessions are reported as alive/closed:

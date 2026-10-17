@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"openpak/xb-live/internal/krb"
-	"openpak/xb-live/internal/sgwire"
+	"github.com/openpak/xb-common/krb"
+	"github.com/openpak/xb-gateway/sgwire"
 )
 
 const kdcXUID = 0x0009000000000001

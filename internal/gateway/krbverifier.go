@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"openpak/xb-live/internal/krb"
+	"github.com/openpak/xb-common/krb"
 )
 
 // KrbVerifier validates native AP-REQs carrying xb-auth service tickets. The

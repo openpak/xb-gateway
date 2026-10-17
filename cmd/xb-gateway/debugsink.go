@@ -5,7 +5,7 @@ package main
 import (
 	"context"
 
-	"openpak/xb-live/services/xb-gateway/internal/gateway"
+	"github.com/openpak/xb-gateway/internal/gateway"
 )
 
 // debugSink accepts a connection and discards what the console sends. It

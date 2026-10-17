@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"time"
 
-	"openpak/xb-live/internal/xbaccountapi"
+	"github.com/openpak/xb-common/xbaccountapi"
 )
 
 // AccountDirectory adapts the xb-account contract (internal/xbaccountapi) to

@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"openpak/xb-live/internal/sgwire"
+	"github.com/openpak/xb-gateway/sgwire"
 )
 
 const (
