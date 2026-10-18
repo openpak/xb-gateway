@@ -61,7 +61,7 @@ func NewGRPCBackend(target string, opt grpc.DialOption) (*GRPCBackend, error) {
 }
 
 func (b *GRPCBackend) Open(ctx context.Context, cc ConnContext, sink Sink) (Stream, error) {
-	st, err := xbfeature.Open(ctx, b.conn, xbfeature.Info{PrincipalID: cc.PrincipalID, CoreAccountID: cc.CoreAccountID,
+	st, err := xbfeature.Open(ctx, b.conn, xbfeature.Info{Client: cc.Client, PrincipalID: cc.PrincipalID, CoreAccountID: cc.CoreAccountID,
 		XUID: cc.XUID, TitleID: cc.TitleID, ServiceID: cc.ServiceID, Generation: cc.Generation},
 		sink.Send, sink.Close)
 	if err != nil {

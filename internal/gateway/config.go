@@ -10,26 +10,30 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/openpak/xb-common/xbaccountapi"
 )
 
 // Config separates where the gateway binds from what it tells consoles: on the
 // secondary host the public IP is NAT-ed and not a local address.
 type Config struct {
-	BindAddr      netip.AddrPort // local interface, e.g. 0.0.0.0:3074
-	AdvertiseIP   netip.Addr     // public IPv4 baked into tickets; never a ZeroTier address
-	HealthAddr    string         // loopback by default
-	MaxSessions   int
-	MaxPerIP      int
-	InitRate      float64 // init packets per second per source IP
-	InitBurst     float64
-	InitWorkers   int
-	PacketRate    float64 // per-session packets per second
-	PacketBurst   float64
-	IdleTimeout   time.Duration
-	MaxLifetime   time.Duration
-	ClockSkew     time.Duration
-	DirectoryWait time.Duration
-	MaxTCPPerSess int
+	// BerthMachineIDs contains provisioned Berth device IDs, not user XUIDs.
+	BerthMachineIDs map[string]bool
+	BindAddr        netip.AddrPort // local interface, e.g. 0.0.0.0:3074
+	AdvertiseIP     netip.Addr     // public IPv4 baked into tickets; never a ZeroTier address
+	HealthAddr      string         // loopback by default
+	MaxSessions     int
+	MaxPerIP        int
+	InitRate        float64 // init packets per second per source IP
+	InitBurst       float64
+	InitWorkers     int
+	PacketRate      float64 // per-session packets per second
+	PacketBurst     float64
+	IdleTimeout     time.Duration
+	MaxLifetime     time.Duration
+	ClockSkew       time.Duration
+	DirectoryWait   time.Duration
+	MaxTCPPerSess   int
 
 	MinTicketStart time.Time // tickets issued before this are refused so consoles fetch new ones (zero = off)
 	DebugFrames    bool      // off by default; logs per-frame metadata and a short hex prefix of TCP data
@@ -48,6 +52,11 @@ func DefaultConfig() Config {
 }
 
 func (c Config) Validate() error {
+	for id := range c.BerthMachineIDs {
+		if !xbaccountapi.ValidMachineID(id) {
+			return errors.New("XBGW_BERTH_MACHINE_IDS must contain valid machine IDs")
+		}
+	}
 	if !c.AdvertiseIP.Is4() || c.AdvertiseIP.IsUnspecified() || c.AdvertiseIP.IsLoopback() {
 		return errors.New("XBGW_ADVERTISE_IP must be the public IPv4 address consoles reach")
 	}
@@ -91,6 +100,13 @@ func ConfigFromEnv(lookup func(string) (string, bool)) (Config, error) {
 	dur := func(dst *time.Duration) func(string) error {
 		return func(v string) (err error) { *dst, err = time.ParseDuration(v); return }
 	}
+	get("XBGW_BERTH_MACHINE_IDS", func(v string) error {
+		c.BerthMachineIDs = make(map[string]bool)
+		for _, id := range strings.Split(v, ",") {
+			c.BerthMachineIDs[strings.TrimSpace(id)] = true
+		}
+		return nil
+	})
 	get("XBGW_BIND", func(v string) (err error) { c.BindAddr, err = netip.ParseAddrPort(v); return })
 	get("XBGW_ADVERTISE_IP", func(v string) (err error) { c.AdvertiseIP, err = netip.ParseAddr(v); return })
 	get("XBGW_HEALTH_ADDR", func(v string) error { c.HealthAddr = v; return nil })

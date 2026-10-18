@@ -232,7 +232,7 @@ func (s *Server) handleInit(pkt []byte, peer netip.AddrPort) {
 	sess := &Session{srv: s, peer: peer, sendSPI: sgwire.SPIFromU32(init.SPI), keys: keys, initKey: replayKey, lastSeen: now,
 		conns: map[tcpKey]*tcpConn{}, services: map[uint16]uint32{}, sendSeq: 1,
 		bucket:   bucket{tokens: s.cfg.PacketBurst, last: now},
-		identity: ConnIdentity{Principal: principal, XUID: id.XUID, TitleID: id.TitleID, Generation: s.gen.Add(1)}}
+		identity: ConnIdentity{Client: s.clientForDevice(id.MachineID), Principal: principal, XUID: id.XUID, TitleID: id.TitleID, Generation: s.gen.Add(1)}}
 	for _, m := range id.Services {
 		sess.services[m.Port] = m.ID
 	}
@@ -443,3 +443,10 @@ func (s *Server) frameLog(msg string, args ...any) {
 
 // SetControl attaches the control link; call before Serve.
 func (s *Server) SetControl(l *ControlLink) { s.control = l }
+
+func (s *Server) clientForDevice(machineID string) string {
+	if machineID != "" && s.cfg.BerthMachineIDs[machineID] {
+		return "berth"
+	}
+	return ""
+}

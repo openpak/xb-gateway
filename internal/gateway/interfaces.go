@@ -32,6 +32,7 @@ type ServiceMapping struct {
 // gateway never parses Kerberos itself; xb-auth's ticket format (internal/krb)
 // plugs in by implementing TicketVerifier.
 type Identity struct {
+	MachineID   string // extracted from the authenticated machine principal, never packet metadata
 	XUID        uint64
 	TitleID     uint32 // zero when the ticket carries no title
 	SessionKey  [16]byte
@@ -71,6 +72,7 @@ type Directory interface {
 // ConnContext is bound by the gateway from the validated ticket and directory
 // answer. Backends must trust this and never read identity from client bytes.
 type ConnContext struct {
+	Client        string // operator-provisioned client label for the authenticated device
 	PrincipalID   string
 	CoreAccountID string
 	XUID          uint64

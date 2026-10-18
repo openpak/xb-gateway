@@ -82,6 +82,7 @@ type Session struct {
 
 // ConnIdentity is the identity the gateway bound at handshake.
 type ConnIdentity struct {
+	Client     string
 	Principal  Principal
 	XUID       uint64
 	TitleID    uint32
@@ -387,7 +388,7 @@ func (s *Session) openTCP(hdr sgwire.TCPHeader, key tcpKey, options []byte, data
 	c.sndNxt = binary.BigEndian.Uint32(iss[:])
 	ctx, cancel := context.WithTimeout(context.Background(), s.srv.cfg.DirectoryWait)
 	defer cancel()
-	stream, err := backend.Open(ctx, ConnContext{PrincipalID: s.identity.Principal.PrincipalID,
+	stream, err := backend.Open(ctx, ConnContext{Client: s.identity.Client, PrincipalID: s.identity.Principal.PrincipalID,
 		CoreAccountID: s.identity.Principal.CoreAccountID, XUID: s.identity.XUID, TitleID: s.identity.TitleID,
 		ServiceID: id, Generation: s.identity.Generation}, &sink{s: s, c: c})
 	if err != nil || stream == nil {

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/openpak/xb-common/krb"
@@ -84,7 +85,7 @@ func (v KrbVerifier) VerifyAPReq(apReq []byte, now time.Time) (*Identity, error)
 	if users != 1 || addrs != 1 || xuid == 0 || address.NumServices > krb.MaxServices {
 		return nil, ticketErr("authorization data (users/service addresses count or xuid)")
 	}
-	id := &Identity{XUID: xuid, SessionKey: sessionKey, GatewayIP: address.SiteIP,
+	id := &Identity{MachineID: ticketMachineID(part.CName), XUID: xuid, SessionKey: sessionKey, GatewayIP: address.SiteIP,
 		TicketStart: part.Start(), TicketEnd: part.EndTime,
 		AuthTime: auth.CTime.Add(time.Duration(auth.CUsec) * time.Microsecond), Checksum: auth.Cksum}
 	if kv := req.Ticket.Enc.KVNO; kv != nil {
@@ -129,4 +130,26 @@ func openFailure(ring *krb.Keyring, t krb.Ticket) string {
 		return fmt.Sprintf("ticket decrypts but its contents do not parse (%d bytes): %v", len(plain), err)
 	}
 	return "ticket open failed"
+}
+
+// ticketMachineID reads only the sealed ticket's machine principal. xb-auth
+// carries this name from the admitted machine AS exchange into compound SG
+// tickets. A user-only ticket has no device attribution and keeps the Xbox label.
+func ticketMachineID(name krb.PrincipalName) string {
+	if name.Type != krb.NameTypeEnterprise || len(name.Parts) != 1 {
+		return ""
+	}
+	principal, domain, ok := strings.Cut(name.Parts[0], "@")
+	if !ok || domain == "" {
+		return ""
+	}
+	serial, ok := strings.CutPrefix(principal, "SN.")
+	if !ok {
+		return ""
+	}
+	id, _, err := krb.MachineIDFromSerial(serial)
+	if err != nil {
+		return ""
+	}
+	return id
 }
