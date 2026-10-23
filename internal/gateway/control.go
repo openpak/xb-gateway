@@ -76,7 +76,7 @@ func (l *ControlLink) Run(ctx context.Context, srv *Server) {
 }
 
 // deliverPush sends an SG 0x5309 message to every session of the console user.
-// Layout (docs/xbox/social-protocol.md 2.3): u32 message version, then one
+// Layout (internal research notes 2.3): u32 message version, then one
 // entry per user: xuid (two u32), the version words, a zero word.
 func (s *Server) deliverPush(xuid uint64, words []uint32) {
 	if len(words) == 0 || len(words) > 64 {
