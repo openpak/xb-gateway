@@ -1,13 +1,42 @@
-# xb-gateway
+# Xbox Gateway Server
 
-Original Xbox security gateway (SG): terminates the native Xbox secure transport on UDP 3074, validates xb-auth tickets (shared keyring), admits users through xb-account (mTLS) and dispatches service ids to feature backends (`xb-social`, `xb-tou`, ...) over the `xbfeature` gRPC stream. Runs on the secondary host (host network). `XBGW_BIND` (local interface) and `XBGW_ADVERTISE_IP` (public IP baked into tickets) are separate on purpose. Health: `XBGW_HEALTH_ADDR` (loopback) serves `/healthz`, `/readyz`, `/metricsz`; `xb-gateway healthcheck` is the listener-liveness probe. Configuration: `deploy/xb-gateway.env.example`; unit example `deploy/openpak-xb-gateway.container`. The `sgwire` package (framing/crypto of the SG protocol) is public so xb-e2e can drive a console-side client.
+OpenPak's Xbox Gateway Server.
 
-## Repository
+| | |
+| --- | --- |
+| Network | Original Xbox |
+| Role | Security gateway: terminates the native Xbox secure transport, validates xb-auth tickets, admits users through xb-account and dispatches service ids to feature backends |
+| Depends on | [`xb-auth`](https://github.com/openpak/xb-auth) (ticket keyring), [`xb-account`](https://github.com/openpak/xb-account) (mTLS), feature backends such as `xb-social` and `xb-tou` (`xbfeature` gRPC stream), [`xb-common`](https://github.com/openpak/xb-common) (private Go module) |
+| Image | `ghcr.io/openpak/xb-gateway` |
+| Based on | [Xombie](https://github.com/XombieOnline/xombie) security gateway (AGPL-3.0) |
+| Licence | AGPL-3.0-only |
 
-- Module `github.com/openpak/xb-gateway`, image `ghcr.io/openpak/xb-gateway` (static, scratch, uid 10001).
-- Shared packages: `github.com/openpak/xb-common` (private; see its README for access). Service map: workspace docs `xbox/native-service-architecture.md`.
-- Build and test: `GOWORK=off go build ./... && go vet ./... && go test -race ./...` (with `GOPRIVATE=github.com/openpak/*` and `gh auth setup-git`).
-- Image: `podman build --secret id=netrc,src=$HOME/.netrc -t ghcr.io/openpak/xb-gateway:dev .`
-- Release: push a `vX.Y.Z` tag; `.github/workflows/release.yml` (tags and manual dispatch only) tests and publishes the multi-arch image. CI reads xb-common with the job's `GITHUB_TOKEN` through a netrc build secret; nothing secret is in git or in the image.
-- `deploy/` holds the env example and a Podman quadlet example (digests in it are examples; production pins its own).
-- Provenance and licence: AGPL-3.0-only, see `LICENSE` and `NOTICE`. Derived from the Xombie project in part; the legacy Rust workspace remains in https://github.com/openpak/xbox-live.
+## What it serves
+
+| Endpoint | What |
+| --- | --- |
+| UDP 3074 | Native Xbox secure transport |
+| `xbfeature` gRPC stream | Service-id dispatch to feature backends |
+
+## Run
+
+Runs as a container on the secondary host with host networking. It is configured from `deploy/xb-gateway.env.example`; the quadlet example is `deploy/openpak-xb-gateway.container`. Details are in [deploy.md](docs/deploy.md).
+
+## Build
+
+```sh
+GOWORK=off go build ./... && go vet ./... && go test -race ./...
+```
+
+Needs `GOPRIVATE=github.com/openpak/*` and `gh auth setup-git`, because `xb-common` is a private module.
+
+## Docs
+
+- [Protocol](docs/protocol.md)
+- [Evidence](docs/evidence.md)
+- [Deploy](docs/deploy.md)
+- [Notes](docs/notes.md)
+
+## Licence
+
+AGPL-3.0-only. See [LICENSE](LICENSE).
