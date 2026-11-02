@@ -33,7 +33,6 @@ Needs `GOPRIVATE=github.com/openpak/*` and `gh auth setup-git`, because `xb-comm
 ## Docs
 
 - [Protocol](docs/protocol.md)
-- [Evidence](docs/evidence.md)
 - [Deploy](docs/deploy.md)
 - [Notes](docs/notes.md)
 
